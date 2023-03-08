@@ -1,4 +1,7 @@
 #!/usr/bin/python3 -u
+from mytoncore import GetMemoryInfo
+from mypylib.mypylib import *
+import mytonctrl
 import os
 from pathlib import Path
 import sys
@@ -17,9 +20,6 @@ import subprocess
 
 sys.path.append('/usr/src/mytonctrl')
 
-import mytonctrl
-from mypylib.mypylib import *
-from mytoncore import GetMemoryInfo
 
 local = MyPyClass(__file__)
 
@@ -129,7 +129,8 @@ class Reporter(MTC):
         super(Reporter, self).__init__()
 
         self.log = self.init_logger()
-        self.log.info(f'validator reporter init started at {datetime.utcnow()}')
+        self.log.info(
+            f'validator reporter init started at {datetime.utcnow()}')
 
         self.metrics = self.load_json_from_file(self.METRICS_FILE)
         self.const = self.load_json_from_file(self.CONST_FILE)
@@ -143,11 +144,13 @@ class Reporter(MTC):
 
     def init_logger(self):
 
-        formatter = Formatter(fmt='[%(asctime)s] %(filename)s:%(lineno)s - %(message)s', datefmt='%Y-%m-%d,%H:%M:%S')
+        formatter = Formatter(
+            fmt='[%(asctime)s] %(filename)s:%(lineno)s - %(message)s', datefmt='%Y-%m-%d,%H:%M:%S')
         stream_handler = StreamHandler()
         stream_handler.setFormatter(formatter)
 
-        file_handler = RotatingFileHandler(self.LOG_FILENAME, maxBytes=3 * 1024 * 1024, backupCount=5, mode='a')
+        file_handler = RotatingFileHandler(
+            self.LOG_FILENAME, maxBytes=3 * 1024 * 1024, backupCount=5, mode='a')
         file_handler.setFormatter(formatter)
 
         logger = getLogger('reporter')
@@ -174,7 +177,8 @@ class Reporter(MTC):
     def write_metrics_to_file(self, key, value):
 
         self.metrics[key] = value
-        self.log.info(f'writing {key} with value {value} to metrics file at {self.METRICS_FILE}')
+        self.log.info(
+            f'writing {key} with value {value} to metrics file at {self.METRICS_FILE}')
 
         with open(self.METRICS_FILE, 'w') as f:
             json.dump(self.metrics, f)
@@ -220,7 +224,8 @@ class Reporter(MTC):
 
     def single_nominator(self):
         pools = self.mtc.GetPools()
-        assert len(pools) == 1, f'expected exactly 1 single nominator but detected {len(pools)} pools'
+        assert len(
+            pools) == 1, f'expected exactly 1 single nominator but detected {len(pools)} pools'
         account = self.mtc.GetAccount(pools[0].addrB64)
         setattr(pools[0], 'account', account)
         return pools[0]
@@ -238,13 +243,15 @@ class Reporter(MTC):
         return validator_account.balance
 
     def get_elector_total_stake(self, elector_addr):
-        cmd = "runmethodfull {fullElectorAddr} past_elections".format(fullElectorAddr=elector_addr)
+        cmd = "runmethodfull {fullElectorAddr} past_elections".format(
+            fullElectorAddr=elector_addr)
         result = self.mtc.liteClient.Run(cmd)
         result = self.mtc.Result2List(result)
         return result[0][0][5]
 
     def get_stake_in_election(self, elector_addr, adnl_addr):
-        cmd = "runmethodfull {fullElectorAddr} participant_list_extended".format(fullElectorAddr=elector_addr)
+        cmd = "runmethodfull {fullElectorAddr} participant_list_extended".format(
+            fullElectorAddr=elector_addr)
         result = self.mtc.liteClient.Run(cmd)
         # self.log.info(f'get_stake_in_election: result={result}')
         rawElectionEntries = self.mtc.Result2List(result)
@@ -268,7 +275,8 @@ class Reporter(MTC):
     def get_stake_in_validation(self, adnl_addr, config34, elector_addr):
         # self.log.info(f'config34: {config34}')
 
-        res = next((item for item in config34['validators'] if item['adnlAddr'] == adnl_addr), {'weight': 0})
+        res = next((item for item in config34['validators'] if item['adnlAddr'] == adnl_addr), {
+                   'weight': 0})
         # self.log.info(f'get_stake_in_validation: {res}')
 
         elector_total_stake = self.get_elector_total_stake(elector_addr)
@@ -279,7 +287,8 @@ class Reporter(MTC):
 
     def get_freeze_stake(self, mytoncore_db, adnl_addr):
         # TODO: need to parse past_elections frozen dict in python (not implemented) currently reading from mytoncore_db
-        election_id = self.const['validators_elected_for'] * math.floor(self.start_run_time / self.const['validators_elected_for'])
+        election_id = self.const['validators_elected_for'] * math.floor(
+            self.start_run_time / self.const['validators_elected_for'])
         return self.get_stake_from_mytoncore_db(mytoncore_db, election_id, adnl_addr)
 
         # cmd = "runmethodfull {fullElectorAddr} past_elections".format(fullElectorAddr=elector_addr)
@@ -292,7 +301,8 @@ class Reporter(MTC):
 
     def get_unfreeze_stake(self, elector_addr, single_nominator):
         # compute_returned_stake
-        cmd = "runmethodfull {fullElectorAddr} compute_returned_stake 0x{single_nominator_addr}".format(fullElectorAddr=elector_addr, single_nominator_addr=single_nominator.addr)
+        cmd = "runmethodfull {fullElectorAddr} compute_returned_stake 0x{single_nominator_addr}".format(
+            fullElectorAddr=elector_addr, single_nominator_addr=single_nominator.addr)
         result = self.mtc.liteClient.Run(cmd)
         res = self.mtc.Result2List(result)
         self.log.info(f'get_unfreeze_stake: res: {res}')
@@ -301,13 +311,14 @@ class Reporter(MTC):
     def calc_balance_at_elector(self, elector_addr, adnl_addr, single_nominator, config34):
         # currently we are sampling right after elections begins so we are not expected to have frozen stake
         return self.get_stake_in_election(elector_addr, adnl_addr) + \
-               self.get_stake_in_validation(adnl_addr, config34, elector_addr) + \
-               self.get_unfreeze_stake(elector_addr, single_nominator)
+            self.get_stake_in_validation(adnl_addr, config34, elector_addr) + \
+            self.get_unfreeze_stake(elector_addr, single_nominator)
         # + self.get_freeze_stake(mytoncore_db, adnl_addr)
 
     def get_balance_at_elector(self, adnl_addr, single_nominator, config34):
 
-        next_update = self.const['validators_elected_for'] * math.ceil(self.start_run_time / self.const['validators_elected_for']) + self.const['stake_held_for'] + 630
+        next_update = self.const['validators_elected_for'] * math.ceil(
+            self.start_run_time / self.const['validators_elected_for']) + self.const['stake_held_for'] + 630
 
         if self.start_run_time > next_update:
             elector_addr = self.const['elector_addr']
@@ -315,9 +326,9 @@ class Reporter(MTC):
                 self.get_stake_in_election(elector_addr, adnl_addr) + \
                 self.get_stake_in_validation(adnl_addr, config34, elector_addr) + \
                 self.get_unfreeze_stake(elector_addr, single_nominator)
-            # + self.get_freeze_stake(mytoncore_db, adnl_addr) 
+            # + self.get_freeze_stake(mytoncore_db, adnl_addr)
             # self.log.info(f'balance_at_elector: {self.balance_at_elector}')
- 
+
             self.reporter_db['balance_at_elector'] = self.balance_at_elector
             self.save_json_to_file(self.reporter_db, self.DB_FILE)
 
@@ -388,7 +399,8 @@ class Reporter(MTC):
     def validation_started_at(self, past_election_ids):
 
         if float(past_election_ids[0]) > self.start_run_time:
-            assert float(past_election_ids[1]) < self.start_run_time, f'election_id {past_election_ids[1]} is expected to less than current time {self.start_run_time}'
+            assert float(
+                past_election_ids[1]) < self.start_run_time, f'election_id {past_election_ids[1]} is expected to less than current time {self.start_run_time}'
             return past_election_ids[1]
         else:
             return past_election_ids[0]
@@ -430,16 +442,20 @@ class Reporter(MTC):
 
         apy = round(
             roi * self.SECONDS_IN_YEAR / (
-                    self.const['validators_elected_for'] * math.floor(self.start_run_time / self.const['validators_elected_for']) - int(self.reporter_db['start_work_time'])
+                self.const['validators_elected_for'] * math.floor(
+                    self.start_run_time / self.const['validators_elected_for']) - int(self.reporter_db['start_work_time'])
             ), 2)
 
-        next_update = self.const['validators_elected_for'] * math.ceil(self.start_run_time / self.const['validators_elected_for']) + self.const['stake_held_for'] + 630
-        self.log.info(f"roi={roi}, next_update={next_update}, apy={apy}, x={self.const['validators_elected_for'] * math.floor(self.start_run_time / self.const['validators_elected_for'])}")
+        next_update = self.const['validators_elected_for'] * math.ceil(
+            self.start_run_time / self.const['validators_elected_for']) + self.const['stake_held_for'] + 630
+        self.log.info(
+            f"roi={roi}, next_update={next_update}, apy={apy}, x={self.const['validators_elected_for'] * math.floor(self.start_run_time / self.const['validators_elected_for'])}")
 
         if self.start_run_time > next_update or self.apy == -1:
             self.apy = max(round(
                 roi * self.SECONDS_IN_YEAR / (
-                        self.const['validators_elected_for'] * math.floor(self.start_run_time / self.const['validators_elected_for']) - int(self.reporter_db['start_work_time'])
+                    self.const['validators_elected_for'] * math.floor(
+                        self.start_run_time / self.const['validators_elected_for']) - int(self.reporter_db['start_work_time'])
                 ), 2), 0)
 
         return self.apy
@@ -452,7 +468,8 @@ class Reporter(MTC):
         end_time = int(self.start_run_time) - 15
 
         if end_time - start_time > 65536:
-            self.log.error(f'unexpected time diff between end_time = {end_time} and start_time = {start_time}')
+            self.log.error(
+                f'unexpected time diff between end_time = {end_time} and start_time = {start_time}')
             start_time = end_time - 3 * 3600  # last 3 hours
 
         validators_load = self.get_validators_load(start_time, end_time)
@@ -493,7 +510,8 @@ class Reporter(MTC):
             return 0
 
         complaints_hash = []
-        last_reported_election = sorted(mytoncore_db['saveComplaints'].keys(), reverse=True)[0]
+        last_reported_election = sorted(
+            mytoncore_db['saveComplaints'].keys(), reverse=True)[0]
         for complaint_hash, complaints_values in mytoncore_db['saveComplaints'][last_reported_election].items():
             if complaints_values['suggestedFine'] != self.const['suggested_fine'] or complaints_values['suggestedFinePart'] != self.const['suggested_fine_part']:
                 complaints_hash.append(complaint_hash)
@@ -502,7 +520,7 @@ class Reporter(MTC):
 
     def get_load_stats(self, mytoncore_db):
 
-        #TODO fix hack
+        # TODO fix hack
         return 0, 0, 0
         net_load_avg = mytoncore_db['statistics']['netLoadAvg'][1]
         sda_load_avg_pct = mytoncore_db['statistics']['disksLoadPercentAvg']['sda'][1]
@@ -561,7 +579,8 @@ class Reporter(MTC):
 
     def _get_total_stake(self, mytoncore_db):
 
-        prev_election_id = sorted(mytoncore_db['saveElections'].keys(), reverse=True)[1]
+        prev_election_id = sorted(
+            mytoncore_db['saveElections'].keys(), reverse=True)[1]
         total_stake = 0
         for values in mytoncore_db['saveElections'][prev_election_id].values():
             total_stake += values['stake']
@@ -605,14 +624,16 @@ class Reporter(MTC):
 
         if offers[-1].get('hash') != self.prev_offers[-1].get('hash'):
             self.prev_offers = offers
-            self.log.info(f'new offers: {offers}, prev offers: {self.prev_offers}')
+            self.log.info(
+                f'new offers: {offers}, prev offers: {self.prev_offers}')
             return 1
 
         return 0
 
     def detect_complaint(self, mytoncore_db, past_election_ids, adnl_addr):
 
-        election_id = past_election_ids[0] if float(past_election_ids[0]) < self.start_run_time else past_election_ids[1]
+        election_id = past_election_ids[0] if float(
+            past_election_ids[0]) < self.start_run_time else past_election_ids[1]
         if 'saveComplaints' not in mytoncore_db or election_id not in mytoncore_db['saveComplaints']:
             return -1
 
@@ -627,7 +648,8 @@ class Reporter(MTC):
             return version, capabilities
 
         except Exception as e:
-            self.log.error('could not extract version and capabilities from config8={}, e={}'.format(config8, e))
+            self.log.error(
+                'could not extract version and capabilities from config8={}, e={}'.format(config8, e))
             return -1, -1
 
     def global_version_changed(self, version, capabilities):
@@ -663,13 +685,15 @@ class Reporter(MTC):
         stake_pct = self.get_local_stake_percent()
 
         if stake != 0 or stake_pct != 0:
-            self.log.error(f'Failed to set stake and stake_percent to 0 (stake={stake}, stake_percent={stake_pct})')
+            self.log.error(
+                f'Failed to set stake and stake_percent to 0 (stake={stake}, stake_percent={stake_pct})')
         else:
             self.log.info(f'Successfully set stake and stake_percent to 0')
 
     def emergency_update(self, emergency_flags_filler):
 
-        emergency_flags = {'exit_flags': dict(), 'recovery_flags': dict(), 'warning_flags': dict()}
+        emergency_flags = {'exit_flags': dict(
+        ), 'recovery_flags': dict(), 'warning_flags': dict()}
 
         #################################
         # Exit Only
@@ -692,9 +716,12 @@ class Reporter(MTC):
             if value != 0:
                 emergency_flags['recovery_flags'][key] = 1
 
-        emergency_flags['exit'] = int(len(emergency_flags['exit_flags'].keys()) != 0)
-        emergency_flags['recovery'] = int(len(emergency_flags['recovery_flags'].keys()) != 0)
-        emergency_flags['warning'] = int(len(emergency_flags['warning_flags'].keys()) != 0)
+        emergency_flags['exit'] = int(
+            len(emergency_flags['exit_flags'].keys()) != 0)
+        emergency_flags['recovery'] = int(
+            len(emergency_flags['recovery_flags'].keys()) != 0)
+        emergency_flags['warning'] = int(
+            len(emergency_flags['warning_flags'].keys()) != 0)
         emergency_flags['message'] = f"exit_flags: {list(emergency_flags['exit_flags'].keys())}, recovery_flags: {list(emergency_flags['recovery_flags'].keys())}, " \
                                      f"warning_flags: {list(emergency_flags['warning_flags'].keys())}"
 
@@ -708,19 +735,19 @@ class Reporter(MTC):
         with open(self.METRICS_FILE, 'w') as f:
             json.dump(self.metrics, f)
             self.log.info(f'{self.METRICS_FILE} was updated')
-            self.sendToElastic()    
+            self.sendToElastic()
             self.log.info(f'{self.METRICS_FILE} posted to elastic')
 
     def sendToElastic(self):
         self.log.info("Sending elastic")
-        url = 'http://3.141.233.132:3001/putes/sn-reporter';
+        url = 'http://3.141.233.132:3001/putes/sn-reporter'
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, headers=headers, data=json.dumps(self.metrics))
+        response = requests.post(url, headers=headers,
+                                 data=json.dumps(self.metrics))
         self.log.info(response)
 
-
     def getTonVersion(self):
-        directory ="/usr/src/ton"
+        directory = "/usr/src/ton"
         command = ["git", "rev-parse", "HEAD"]
         result = subprocess.run(command, cwd=directory, stdout=subprocess.PIPE)
         commit_hash = result.stdout.decode().strip()
@@ -728,7 +755,7 @@ class Reporter(MTC):
         return commit_hash+"-"+branch
 
     def getMytonctrlVersion(self):
-        directory ="/usr/src/mytonctrl"
+        directory = "/usr/src/mytonctrl"
         command = ["git", "rev-parse", "HEAD"]
         result = subprocess.run(command, cwd=directory, stdout=subprocess.PIPE)
         commit_hash = result.stdout.decode().strip()
@@ -739,8 +766,9 @@ class Reporter(MTC):
         if path is None:
             path = os.path.curdir
         command = 'git rev-parse --abbrev-ref HEAD'.split()
-        branch = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=path).stdout.read()
-        return branch.strip().decode('utf-8') 
+        branch = subprocess.Popen(
+            command, stdout=subprocess.PIPE, cwd=path).stdout.read()
+        return branch.strip().decode('utf-8')
 
     def run(self):
         retry = 0
@@ -751,7 +779,8 @@ class Reporter(MTC):
             success = True
 
             try:
-                self.log.info(f'validator reporter started at {datetime.utcnow()} (retry {retry})')
+                self.log.info(
+                    f'validator reporter started at {datetime.utcnow()} (retry {retry})')
                 mytoncore_db = self.get_mytoncore_db()
 
                 single_nominator = self.single_nominator()
@@ -759,8 +788,10 @@ class Reporter(MTC):
                 validator_wallet = self.validator_wallet()
                 validator_account = self.validator_account(validator_wallet)
                 adnl_addr = self.mtc.GetAdnlAddr()
-                free_nominator_balance = self.free_nominator_balance(single_nominator)
-                free_validator_balance = self.free_validator_balance(validator_account)
+                free_nominator_balance = self.free_nominator_balance(
+                    single_nominator)
+                free_validator_balance = self.free_validator_balance(
+                    validator_account)
                 stats = self.get_stats()
                 config15 = self.mtc.GetConfig15()
                 config34 = self.mtc.GetConfig34()
@@ -768,19 +799,25 @@ class Reporter(MTC):
                 validation_end_at = str(config34['endWorkTime'])
                 past_election_ids = self.past_election_ids(mytoncore_db)
                 # total_stake = self.get_total_stake(mytoncore_db)
-                balance_at_elector = self.get_balance_at_elector(adnl_addr, single_nominator, config34)
+                balance_at_elector = self.get_balance_at_elector(
+                    adnl_addr, single_nominator, config34)
                 total_stake = self.get_total_network_stake(config34)
                 num_validators = self.get_num_validators(config34)
                 pid = self.get_pid()
                 version, capabilities = self.get_global_version()
                 # validation_started_at = self.validation_started_at(past_election_ids)
-                active_validator, validator_load = self.get_validator_load(validator_index, str(validation_started_at))
-                participate_in_curr_validation = self.participate_in_curr_validation(mytoncore_db, past_election_ids, adnl_addr, validator_index)
-                participate_in_next_validation = self.participate_in_next_validation(mytoncore_db, past_election_ids, adnl_addr)
+                active_validator, validator_load = self.get_validator_load(
+                    validator_index, str(validation_started_at))
+                participate_in_curr_validation = self.participate_in_curr_validation(
+                    mytoncore_db, past_election_ids, adnl_addr, validator_index)
+                participate_in_next_validation = self.participate_in_next_validation(
+                    mytoncore_db, past_election_ids, adnl_addr)
                 min_prob = self.min_prob(active_validator, validator_load)
-                validator_load_not_updated = participate_in_curr_validation and not active_validator and float(validation_started_at) - self.start_run_time > 15
+                validator_load_not_updated = participate_in_curr_validation and not active_validator and float(
+                    validation_started_at) - self.start_run_time > 15
 
-                self.update_start_work_time(participate_in_next_validation, past_election_ids[0])
+                self.update_start_work_time(
+                    participate_in_next_validation, past_election_ids[0])
 
                 ###############################################################
                 # metrics
@@ -798,18 +835,22 @@ class Reporter(MTC):
                 self.metrics['participate_in_next_validation'] = participate_in_next_validation
                 self.metrics['participate_in_curr_validation'] = participate_in_curr_validation
                 self.metrics['active_election_id'] = self.active_election_id()
-                self.metrics['elections_ends_in'] = self.elections_ends_in(past_election_ids)
+                self.metrics['elections_ends_in'] = self.elections_ends_in(
+                    past_election_ids)
                 self.metrics['validations_ends_in'] = self.validation_ends_in()
                 self.metrics['validation_started_at'] = validation_started_at
                 self.metrics['validation_end_at'] = validation_end_at
                 self.metrics['elections_starts_in'] = self.elections_starts_in()
                 self.metrics['held_period_ends_in'] = self.held_period_ends_in()
-                self.metrics['total_validator_balance'] = balance_at_elector + free_validator_balance + free_nominator_balance
-                self.metrics['roi'] = self.calc_roi(self.metrics['total_validator_balance'])
+                self.metrics['total_validator_balance'] = balance_at_elector + \
+                    free_validator_balance + free_nominator_balance
+                self.metrics['roi'] = self.calc_roi(
+                    self.metrics['total_validator_balance'])
                 self.metrics['apy'] = self.calc_apy(self.metrics['roi'])
                 self.metrics['validator_load'] = validator_load
                 self.metrics['min_prob'] = min_prob
-                self.metrics['net_load_avg'], self.metrics['disk_load_pct_avg'], self.metrics['mem_load_avg'] = self.get_load_stats(mytoncore_db)
+                self.metrics['net_load_avg'], self.metrics['disk_load_pct_avg'], self.metrics['mem_load_avg'] = self.get_load_stats(
+                    mytoncore_db)
                 self.metrics['total_network_stake'] = total_stake
                 self.metrics['version'], self.metrics['capabilities'] = version, capabilities
                 self.metrics['num_validators'] = num_validators
@@ -821,50 +862,66 @@ class Reporter(MTC):
                 self.metrics['mytonctrl_version'] = self.getMytonctrlVersion()
                 self.metrics['ton_version'] = self.getTonVersion()
 
-                emergency_flags = {'exit_flags': dict(), 'recovery_flags': dict(), 'warning_flags': dict()}
+                emergency_flags = {'exit_flags': dict(
+                ), 'recovery_flags': dict(), 'warning_flags': dict()}
 
                 ###############################################################
                 # exit flags
                 # when set should trigger immediate exit from the next validation cycle
-                # reporter will initiate set stake 0 (and set stakePercent 0) 
+                # reporter will initiate set stake 0 (and set stakePercent 0)
                 ###############################################################
 
                 # verify validator wallet exists
-                emergency_flags['exit_flags']['validator_wallet_not_exists'] = int(self.validator_wallet_exists() != 1)
-                # verify validation cycle was not changed 
-                emergency_flags['exit_flags']['validators_elected_for_changed'] = int(config15['validatorsElectedFor'] != self.const['validators_elected_for'])
-                # verify start of election cycle before next validation was not changed 
-                emergency_flags['exit_flags']['elections_start_before_changed'] = int(config15['electionsStartBefore'] != self.const['elections_start_before'])
-                # verify end of election cycle before next validation was not changed 
-                emergency_flags['exit_flags']['elections_end_before_changed'] = int(config15['electionsEndBefore'] != self.const['elections_end_before'])
-                # verify freeze period was not changed 
-                emergency_flags['exit_flags']['stake_held_for_changed'] = int(config15['stakeHeldFor'] != self.const['stake_held_for'])
-                # verify network fine was not changed 
-                emergency_flags['exit_flags']['fine_changed'] = self.check_fine_changes(mytoncore_db)
-                # verify single nominator code hash was not changed 
-                emergency_flags['exit_flags']['single_nominator_code_changed'] = self.single_nominator_code_changed(single_nominator)
-                # verify elector address was not changed 
-                emergency_flags['exit_flags']['elector_addr_changed'] = self.elector_addr_changed()
-                # verify config address was not changed 
-                emergency_flags['exit_flags']['config_addr_changed'] = self.config_addr_changed()
-                # verify elector code hash address was not changed 
-                emergency_flags['exit_flags']['elector_code_changed'] = self.elector_code_changed()
-                # verify config code hash address was not changed 
-                emergency_flags['exit_flags']['config_code_changed'] = self.config_code_changed()
+                emergency_flags['exit_flags']['validator_wallet_not_exists'] = int(
+                    self.validator_wallet_exists() != 1)
+                # verify validation cycle was not changed
+                emergency_flags['exit_flags']['validators_elected_for_changed'] = int(
+                    config15['validatorsElectedFor'] != self.const['validators_elected_for'])
+                # verify start of election cycle before next validation was not changed
+                emergency_flags['exit_flags']['elections_start_before_changed'] = int(
+                    config15['electionsStartBefore'] != self.const['elections_start_before'])
+                # verify end of election cycle before next validation was not changed
+                emergency_flags['exit_flags']['elections_end_before_changed'] = int(
+                    config15['electionsEndBefore'] != self.const['elections_end_before'])
+                # verify freeze period was not changed
+                emergency_flags['exit_flags']['stake_held_for_changed'] = int(
+                    config15['stakeHeldFor'] != self.const['stake_held_for'])
+                # verify network fine was not changed
+                emergency_flags['exit_flags']['fine_changed'] = self.check_fine_changes(
+                    mytoncore_db)
+                # verify single nominator code hash was not changed
+                emergency_flags['exit_flags']['single_nominator_code_changed'] = self.single_nominator_code_changed(
+                    single_nominator)
+                # verify elector address was not changed
+                emergency_flags['exit_flags']['elector_addr_changed'] = self.elector_addr_changed(
+                )
+                # verify config address was not changed
+                emergency_flags['exit_flags']['config_addr_changed'] = self.config_addr_changed(
+                )
+                # verify elector code hash address was not changed
+                emergency_flags['exit_flags']['elector_code_changed'] = self.elector_code_changed(
+                )
+                # verify config code hash address was not changed
+                emergency_flags['exit_flags']['config_code_changed'] = self.config_code_changed(
+                )
                 # verify total network stake was not reduced by more than 20% (relative to previous cycle)
-                emergency_flags['exit_flags']['total_stake_reduced'] = self.total_stake_reduced(total_stake)
+                emergency_flags['exit_flags']['total_stake_reduced'] = self.total_stake_reduced(
+                    total_stake)
                 # verify total number of valudators in the network was not reduced by more than 20% (relative to previous cycle)
-                emergency_flags['exit_flags']['num_validators_reduced'] = self.num_validators_reduced(num_validators)
+                emergency_flags['exit_flags']['num_validators_reduced'] = self.num_validators_reduced(
+                    num_validators)
                 # verify global version and network capabilities were not changed
-                emergency_flags['exit_flags']['global_version_changed'] = self.global_version_changed(version, capabilities)
+                emergency_flags['exit_flags']['global_version_changed'] = self.global_version_changed(
+                    version, capabilities)
                 # verify no one complaints about this validator
-                emergency_flags['exit_flags']['complaint_detected'] = int(self.detect_complaint(mytoncore_db, past_election_ids, adnl_addr) == 1)
+                emergency_flags['exit_flags']['complaint_detected'] = int(
+                    self.detect_complaint(mytoncore_db, past_election_ids, adnl_addr) == 1)
                 # TODO: need to check this flag
                 # verify no new offers were submitted, new offers might influence and change some important network params
                 emergency_flags['exit_flags']['new_offers'] = self.new_offers()
-                # verify validator load is accessible. validator load reflects the load from validator work (e.g.: how many blocks were closed)  
+                # verify validator load is accessible. validator load reflects the load from validator work (e.g.: how many blocks were closed)
                 emergency_flags['exit_flags']['validator_load'] = validator_load_not_updated
-                # verify validator is closing blocks with high probability (> 0.1) 
+                # verify validator is closing blocks with high probability (> 0.1)
                 # min_prob is the probability the validator didn't close block for the given period (since the start of the validation cycle)
                 emergency_flags['exit_flags']['min_prob'] = min_prob < .1
 
@@ -876,15 +933,20 @@ class Reporter(MTC):
                 ###############################################################
 
                 # validator process is running
-                emergency_flags['recovery_flags']['systemctl_status_validator'] = int(self.systemctl_status_validator_ok() != 1)
+                emergency_flags['recovery_flags']['systemctl_status_validator'] = int(
+                    self.systemctl_status_validator_ok() != 1)
                 # validator is not out of sunc (validator epoch relative to the network)
-                emergency_flags['recovery_flags']['out_of_sync_err'] = int(self.metrics['out_of_sync'] > 120)
+                emergency_flags['recovery_flags']['out_of_sync_err'] = int(
+                    self.metrics['out_of_sync'] > 120)
                 # validator RAM should be < 85%
-                emergency_flags['recovery_flags']['mem_load_avg_err'] = int(self.metrics['mem_load_avg'] > 85)
+                emergency_flags['recovery_flags']['mem_load_avg_err'] = int(
+                    self.metrics['mem_load_avg'] > 85)
                 # validator disk should be < 85%
-                emergency_flags['recovery_flags']['disk_load_pct_avg_err'] = int(self.metrics['mem_load_avg'] > 85)
+                emergency_flags['recovery_flags']['disk_load_pct_avg_err'] = int(
+                    self.metrics['mem_load_avg'] > 85)
                 # validator network load average should be < 400 MB/sec
-                emergency_flags['recovery_flags']['net_load_avg_err'] = int(self.metrics['mem_load_avg'] > 400)
+                emergency_flags['recovery_flags']['net_load_avg_err'] = int(
+                    self.metrics['mem_load_avg'] > 400)
 
                 ###############################################################
                 # warning flags
@@ -895,7 +957,8 @@ class Reporter(MTC):
                 # validator balance should be > 100 TON
                 emergency_flags['warning_flags']['low_validator_balance'] = free_validator_balance < 100
                 # validator should continuously participate in every validation cycle
-                emergency_flags['warning_flags']['participate_in_curr_validation'] = bool(not participate_in_curr_validation)
+                emergency_flags['warning_flags']['participate_in_curr_validation'] = bool(
+                    not participate_in_curr_validation)
 
                 self.emergency_update(emergency_flags)
 
@@ -914,7 +977,8 @@ class Reporter(MTC):
             if success or retry >= 5:
                 retry = 0
                 sleep_sec = self.SLEEP_INTERVAL - time.time() % self.SLEEP_INTERVAL
-                self.log.info(f'executed in {round(time.time() - self.start_run_time, 2)} seconds')
+                self.log.info(
+                    f'executed in {round(time.time() - self.start_run_time, 2)} seconds')
                 self.log.info(f'sleep for {round(sleep_sec)} seconds')
                 time.sleep(sleep_sec)
 

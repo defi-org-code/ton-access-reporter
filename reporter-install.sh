@@ -6,7 +6,7 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
-SERVICE_NAME=reporter
+SERVICE_NAME=access-reporter
 
 REPORTER_DB=/var/${SERVICE_NAME}
 SRC_DIR=/usr/src/${SERVICE_NAME}
@@ -15,12 +15,9 @@ SYSTEMD_DIR=/etc/systemd/system/
 
 INSTALLER_DIR=/tmp/${SERVICE_NAME}
 
-REPORTER_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/reporter.py
-VALIDATOR_REPORTER_SERVICE_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/${SERVICE_NAME}.service
-EXIT_STAKE_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/exit.py
-ENTER_STAKE_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/enter.py
-RESET_EMERGENCY_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/reset_emergency.py
-CONSTANTS_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-validator-reporter/master/constants.json
+REPORTER_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/access-reporter.py
+VALIDATOR_REPORTER_SERVICE_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/${SERVICE_NAME}.service
+CONSTANTS_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/constants.json
 
 if [ -d "${INSTALLER_DIR}" ]; then
 	echo "removing ${INSTALLER_DIR}"
@@ -59,15 +56,6 @@ wget "${VALIDATOR_REPORTER_SERVICE_DESCRIPTOR}"
 echo "Downloading reporter script ..."
 wget "${REPORTER_DESCRIPTOR}"
 
-echo "Downloading exit script ..."
-wget "${EXIT_STAKE_DESCRIPTOR}"
-
-echo "Downloading enter script ..."
-wget "${ENTER_STAKE_DESCRIPTOR}"
-
-echo "Downloading reset_emergency script ..."
-wget "${RESET_EMERGENCY_DESCRIPTOR}"
-
 echo "Downloading constants script ..."
 wget "${CONSTANTS_DESCRIPTOR}"
 
@@ -75,16 +63,7 @@ echo "adding ${SERVICE_NAME}.service to systemd"
 cp ${SERVICE_NAME}.service ${SYSTEMD_DIR}
 
 echo "adding reporter script to ${SRC_DIR}"
-cp 'reporter.py' ${SRC_DIR}
-
-echo "adding exit script to ${SRC_DIR}"
-cp 'exit.py' ${SRC_DIR}
-
-echo "adding enter script to ${SRC_DIR}"
-cp 'enter.py' ${SRC_DIR}
-
-echo "adding reset_emergency script to ${SRC_DIR}"
-cp 'reset_emergency.py' ${SRC_DIR}
+cp 'access-reporter.py' ${SRC_DIR}
 
 echo "adding constants script to ${REPORTER_DB}"
 cp 'constants.json' ${REPORTER_DB}

@@ -5,7 +5,7 @@ After=validator.service
 [Service]
 User=ubuntu
 WorkingDirectory=/usr/src/reporter/
-ExecStart=python3 reporter.py
+ExecStart=python3 access-reporter.py
 Restart=always
 RestartSec=30
 
