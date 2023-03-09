@@ -1,23 +1,25 @@
 #!/usr/bin/python3 -u
-from mypylib.mypylib import *
-import mytonctrl
-import os
 from pathlib import Path
-import sys
-import socket
-import json
-import time
-from datetime import datetime
-import logging
-from logging.handlers import RotatingFileHandler
-import traceback
-from logging import Formatter, getLogger, StreamHandler
-import copy
-import math
-import requests
 import subprocess
+import requests
+import math
+import copy
+from logging import Formatter, getLogger, StreamHandler
+import traceback
+from logging.handlers import RotatingFileHandler
+import logging
+from datetime import datetime
+import time
+import json
+import socket
+import sys
+
+import os
 
 sys.path.append('/usr/src/mytonctrl')
+
+from mypylib.mypylib import *
+import mytonctrl
 
 
 local = MyPyClass(__file__)
@@ -255,7 +257,6 @@ class Reporter(MTC):
                     f'validator reporter started at {datetime.utcnow()} (retry {retry})')
                 mytoncore_db = self.get_mytoncore_db()
 
-                validator_index = self.validator_index()
                 adnl_addr = self.mtc.GetAdnlAddr()
                 stats = self.get_stats()
                 config34 = self.mtc.GetConfig34()
@@ -270,7 +271,6 @@ class Reporter(MTC):
                 # general validator metrics
                 ###############################################################
 
-                self.metrics['validator_index'] = validator_index
                 self.metrics['adnl_addr'] = adnl_addr
                 self.metrics['out_of_sync'] = stats['outOfSync']
                 self.metrics['is_working'] = int(stats['isWorking'])
