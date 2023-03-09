@@ -2,8 +2,6 @@
 from pathlib import Path
 import subprocess
 import requests
-import math
-import copy
 from logging import Formatter, getLogger, StreamHandler
 import traceback
 from logging.handlers import RotatingFileHandler
