@@ -272,9 +272,6 @@ class Reporter(MTC):
                 self.metrics['adnl_addr'] = adnl_addr
                 self.metrics['out_of_sync'] = stats['outOfSync']
                 self.metrics['is_working'] = int(stats['isWorking'])
-
-                self.metrics['net_load_avg'], self.metrics['disk_load_pct_avg'], self.metrics['mem_load_avg'] = self.get_load_stats(
-                    mytoncore_db)
                 self.metrics['total_network_stake'] = total_stake
                 self.metrics['version'], self.metrics['capabilities'] = version, capabilities
                 self.metrics['num_validators'] = num_validators
