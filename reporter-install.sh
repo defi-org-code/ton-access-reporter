@@ -17,7 +17,6 @@ INSTALLER_DIR=/tmp/${SERVICE_NAME}
 
 REPORTER_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/access-reporter.py
 VALIDATOR_REPORTER_SERVICE_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/${SERVICE_NAME}.service
-CONSTANTS_DESCRIPTOR=https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/constants.json
 
 if [ -d "${INSTALLER_DIR}" ]; then
 	echo "removing ${INSTALLER_DIR}"
@@ -56,17 +55,11 @@ wget "${VALIDATOR_REPORTER_SERVICE_DESCRIPTOR}"
 echo "Downloading reporter script ..."
 wget "${REPORTER_DESCRIPTOR}"
 
-echo "Downloading constants script ..."
-wget "${CONSTANTS_DESCRIPTOR}"
-
 echo "adding ${SERVICE_NAME}.service to systemd"
 cp ${SERVICE_NAME}.service ${SYSTEMD_DIR}
 
 echo "adding reporter script to ${SRC_DIR}"
 cp 'access-reporter.py' ${SRC_DIR}
-
-echo "adding constants script to ${REPORTER_DB}"
-cp 'constants.json' ${REPORTER_DB}
 
 echo "restarting ${SERVICE_NAME}.service"
 sudo systemctl daemon-reload
