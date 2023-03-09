@@ -1,5 +1,5 @@
 [Unit]
-Description=Ton Validator Reported
+Description=Ton access Reported
 After=validator.service
 
 [Service]
