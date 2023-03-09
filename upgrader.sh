@@ -1,13 +1,13 @@
 ### move to home linux
 cd 
-rm reporter-uninstall.sh
-wget https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/reporter-uninstall.sh
-chmod +x reporter-uninstall.sh
-sudo ./reporter-uninstall.sh
+rm access-reporter-uninstall.sh
+wget https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/access-reporter-uninstall.sh
+chmod +x access-reporter-uninstall.sh
+sudo ./access-reporter-uninstall.sh
 echo 'uninstall reporter completed'
-rm reporter-install.sh
-wget https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/reporter-install.sh
-chmod +x reporter-install.sh
-sudo ./reporter-install.sh 
+rm access-reporter-install.sh
+wget https://raw.githubusercontent.com/defi-org-code/ton-access-reporter/master/access-reporter-install.sh
+chmod +x access-reporter-install.sh
+sudo ./access-reporter-install.sh 
 
 echo 'install and upgrader reporter completed , run systemctl status reporter'

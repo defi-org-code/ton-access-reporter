@@ -6,7 +6,7 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
-SERVICE_NAME=reporter
+SERVICE_NAME=access-reporter
 REPORTER_DB=/var/${SERVICE_NAME}
 SRC_DIR=/usr/src/${SERVICE_NAME}
 REPORTER_LOG_DIR=/var/log/${SERVICE_NAME}
