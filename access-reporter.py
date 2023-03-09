@@ -294,15 +294,15 @@ class Reporter(MTC):
                 # validator is not out of sunc (validator epoch relative to the network)
                 emergency_flags['recovery_flags']['out_of_sync_err'] = int(
                     self.metrics['out_of_sync'] > 120)
-                # validator RAM should be < 85%
-                emergency_flags['recovery_flags']['mem_load_avg_err'] = int(
-                    self.metrics['mem_load_avg'] > 85)
-                # validator disk should be < 85%
-                emergency_flags['recovery_flags']['disk_load_pct_avg_err'] = int(
-                    self.metrics['mem_load_avg'] > 85)
-                # validator network load average should be < 400 MB/sec
-                emergency_flags['recovery_flags']['net_load_avg_err'] = int(
-                    self.metrics['mem_load_avg'] > 400)
+                # # validator RAM should be < 85%
+                # emergency_flags['recovery_flags']['mem_load_avg_err'] = int(
+                #     self.metrics['mem_load_avg'] > 85)
+                # # validator disk should be < 85%
+                # emergency_flags['recovery_flags']['disk_load_pct_avg_err'] = int(
+                #     self.metrics['mem_load_avg'] > 85)
+                # # validator network load average should be < 400 MB/sec
+                # emergency_flags['recovery_flags']['net_load_avg_err'] = int(
+                #     self.metrics['mem_load_avg'] > 400)
 
                 self.report()
 
