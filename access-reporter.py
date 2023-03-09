@@ -1,5 +1,4 @@
 #!/usr/bin/python3 -u
-from mytoncore import GetMemoryInfo
 from mypylib.mypylib import *
 import mytonctrl
 import os
@@ -181,20 +180,6 @@ class Reporter(MTC):
 
         with open(self.MYTONCORE_FILE_PATH, 'r') as f:
             return json.load(f)
-
-    def get_load_stats(self, mytoncore_db):
-
-        # TODO fix hack
-        return 0, 0, 0
-        net_load_avg = mytoncore_db['statistics']['netLoadAvg'][1]
-        sda_load_avg_pct = mytoncore_db['statistics']['disksLoadPercentAvg']['sda'][1]
-        sdb_load_avg_pct = mytoncore_db['statistics']['disksLoadPercentAvg']['sdb'][1]
-        disk_load_pct_avg = max(sda_load_avg_pct, sdb_load_avg_pct)
-
-        mem_info = GetMemoryInfo()
-        mem_load_avg = mem_info['usagePercent']
-
-        return net_load_avg, disk_load_pct_avg, mem_load_avg
 
     def get_num_validators(self, config34):
         return config34['totalValidators']
