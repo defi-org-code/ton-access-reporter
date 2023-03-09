@@ -110,10 +110,10 @@ class Reporter(MTC):
     HOME = Path.home()
 
     MYTONCORE_FILE_PATH = f'{HOME}/.local/share/mytoncore/mytoncore.db'
-    REPORTER_DIR = f'/var/reporter'
+    REPORTER_DIR = f'/var/access-reporter'
     METRICS_FILE = f'{REPORTER_DIR}/metrics.json'
     DB_FILE = f'{REPORTER_DIR}/db.json'
-    LOG_FILENAME = f'/var/log/reporter/reporter.log'
+    LOG_FILENAME = f'/var/log/access-reporter/access-reporter.log'
 
     SECONDS_IN_YEAR = 365 * 24 * 3600
     SLEEP_INTERVAL = 1 * 60
