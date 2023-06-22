@@ -281,8 +281,8 @@ class Reporter(MTC):
                 self.metrics['mytonctrl_version'] = self.getMytonctrlVersion()
                 self.metrics['ton_version'] = self.getTonVersion()
 
-                # emergency_flags = {'exit_flags': dict(
-                # ), 'recovery_flags': dict(), 'warning_flags': dict()}
+                emergency_flags = {'exit_flags': dict(
+                ), 'git statusvery_flags': dict(), 'warning_flags': dict()}
 
                 ###############################################################
                 # recovery flags
@@ -292,8 +292,8 @@ class Reporter(MTC):
                 ###############################################################
 
                 # validator is not out of sunc (validator epoch relative to the network)
-                # emergency_flags['recovery_flags']['out_of_sync_err'] = int(
-                #     self.metrics['out_of_sync'] > 120)
+                emergency_flags['recovery_flags']['out_of_sync_err'] = int(
+                    self.metrics['out_of_sync'] > 120)
                 # # validator RAM should be < 85%
                 # emergency_flags['recovery_flags']['mem_load_avg_err'] = int(
                 #     self.metrics['mem_load_avg'] > 85)
