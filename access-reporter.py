@@ -281,7 +281,7 @@ class Reporter(MTC):
                 self.metrics['mytonctrl_version'] = self.getMytonctrlVersion()
                 self.metrics['ton_version'] = self.getTonVersion()
 
-                emergency_flags = {'exit_flags': dict(
+                emergency_flags = {'recovery_flags': dict(), 'exit_flags': dict(
                 ), 'git statusvery_flags': dict(), 'warning_flags': dict()}
 
                 ###############################################################
