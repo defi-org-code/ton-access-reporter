@@ -111,6 +111,7 @@ class Reporter(MTC):
     MYTONCORE_FILE_PATH = f'{HOME}/.local/share/mytoncore/mytoncore.db'
     REPORTER_DIR = f'/var/access-reporter'
     METRICS_FILE = f'{REPORTER_DIR}/metrics.json'
+    EMERGENCY_FLAGS_FILE = f'{REPORTER_DIR}/emergency_flags.json'
     DB_FILE = f'{REPORTER_DIR}/db.json'
     LOG_FILENAME = f'/var/log/access-reporter/access-reporter.log'
 
@@ -294,17 +295,29 @@ class Reporter(MTC):
                 # validator is not out of sunc (validator epoch relative to the network)
                 emergency_flags['recovery_flags']['out_of_sync_err'] = int(
                     self.metrics['out_of_sync'] > 120)
-                # # validator RAM should be < 85%
+                # validator RAM should be < 85%
                 # emergency_flags['recovery_flags']['mem_load_avg_err'] = int(
                 #     self.metrics['mem_load_avg'] > 85)
                 # # validator disk should be < 85%
                 # emergency_flags['recovery_flags']['disk_load_pct_avg_err'] = int(
                 #     self.metrics['mem_load_avg'] > 85)
-                # # validator network load average should be < 400 MB/sec
+                # # # validator network load average should be < 400 MB/sec
                 # emergency_flags['recovery_flags']['net_load_avg_err'] = int(
                 #     self.metrics['mem_load_avg'] > 400)
 
+
+
                 self.report()
+
+                # emergency flags
+                # emergency_flags['exit'] = int(len(emergency_flags['exit_flags'].keys()) != 0)
+                # emergency_flags['recovery'] = int(len(emergency_flags['recovery_flags'].keys()) != 0)
+                #emergency_flags['warning'] = int(len(emergency_flags['warning_flags'].keys()) != 0)
+                emergency_flags['message'] = f"exit_flags: {list(emergency_flags['exit_flags'].keys())}, recovery_flags: {list(emergency_flags['recovery_flags'].keys())}, " \
+                                             f"warning_flags: {list(emergency_flags['warning_flags'].keys())}"
+
+                self.save_json_to_file(emergency_flags, self.EMERGENCY_FLAGS_FILE)
+
 
                 self.log.info(self.metrics)
 
