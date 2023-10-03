@@ -305,14 +305,12 @@ class Reporter(MTC):
                 # emergency_flags['recovery_flags']['net_load_avg_err'] = int(
                 #     self.metrics['mem_load_avg'] > 400)
 
-
-
                 self.report()
 
                 # emergency flags
-                # emergency_flags['exit'] = int(len(emergency_flags['exit_flags'].keys()) != 0)
-                # emergency_flags['recovery'] = int(len(emergency_flags['recovery_flags'].keys()) != 0)
-                #emergency_flags['warning'] = int(len(emergency_flags['warning_flags'].keys()) != 0)
+                emergency_flags['exit'] = int(len(emergency_flags['exit_flags'].keys()) != 0)
+                emergency_flags['recovery'] = int(len(emergency_flags['recovery_flags'].keys()) != 0)
+                emergency_flags['warning'] = int(len(emergency_flags['warning_flags'].keys()) != 0)
                 emergency_flags['message'] = f"exit_flags: {list(emergency_flags['exit_flags'].keys())}, recovery_flags: {list(emergency_flags['recovery_flags'].keys())}, " \
                                              f"warning_flags: {list(emergency_flags['warning_flags'].keys())}"
 
